@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🧠 NBJ IQ Test</title>
+<style>
+  :root {
+    --bg: #0a0f16;
+    --card: #101720;
+    --accent: #2f6fed;
+    --accent2: #d4a017;
+    --gold: #d4a017;
+    --text: #e8edf5;
+    --muted: #7f8998;
+    --border: #1d2632;
+    --green: #27c281;
+    --red: #e11d48;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(47,111,237,0.18), transparent 28%),
+      linear-gradient(180deg, #0b1118 0%, #070b11 100%);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  header {
+    padding: 18px 20px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10, 15, 22, 0.92);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+  }
+  header h1 { font-size: 1.5em; letter-spacing: -0.03em; }
+  header h1 span { color: var(--accent2); }
+  .back-link {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+
+  /* Intro Screen */
+  .intro {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .intro h2 {
+    font-size: 2em;
+    margin-bottom: 16px;
+  }
+  .intro p {
+    color: var(--muted);
+    font-size: 1.1em;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+  .intro .stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  .intro .stat {
+    text-align: center;
+  }
+  .intro .stat-num {
+    font-size: 2em;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .intro .stat-label {
+    font-size: 0.85em;
+    color: var(--muted);
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 16px 40px;
+    background: linear-gradient(135deg, var(--accent), #1a4fc9);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    text-decoration: none;
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(47,111,237,0.35);
+  }
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  /* Question Screen */
+  .question-screen { display: none; }
+  .question-screen.active { display: block; }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .question-num {
+    font-size: 0.85em;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  .question-card {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .question-text {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .pattern-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .pattern-cell {
+    aspect-ratio: 1;
+    background: var(--border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+  }
+  .pattern-cell.highlight {
+    background: rgba(47,111,237,0.2);
+    border: 2px dashed var(--accent);
+  }
+
+  .options {
+    display: grid;
+    gap: 12px;
+  }
+  .option {
+    padding: 16px 20px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1em;
+    text-align: left;
+    color: var(--text);
+  }
+  .option:hover {
+    border-color: var(--accent);
+    background: rgba(47,111,237,0.08);
+  }
+  .option.selected {
+    border-color: var(--accent);
+    background: rgba(47,111,237,0.15);
+  }
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(39,194,129,0.15);
+  }
+  .option.wrong {
+    border-color: var(--red);
+    background: rgba(225,29,72,0.15);
+  }
+
+  .timer {
+    text-align: center;
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 16px;
+  }
+  .timer.warning { color: var(--red); }
+
+  /* Results Screen */
+  .results { display: none; text-align: center; padding: 40px 20px; }
+  .results.active { display: block; }
+
+  .score-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 24px;
+    box-shadow: 0 20px 60px rgba(47,111,237,0.3);
+  }
+  .score-num {
+    font-size: 3.5em;
+    font-weight: 900;
+    color: white;
+  }
+  .score-label {
+    font-size: 0.9em;
+    color: rgba(255,255,255,0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .result-title {
+    font-size: 1.8em;
+    margin-bottom: 12px;
+  }
+  .result-desc {
+    color: var(--muted);
+    font-size: 1.1em;
+    margin-bottom: 30px;
+    line-height: 1.6;
+  }
+
+  .result-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+  .result-stat {
+    text-align: center;
+  }
+  .result-stat-num {
+    font-size: 1.5em;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .result-stat-label {
+    font-size: 0.8em;
+    color: var(--muted);
+  }
+
+  .share-btns {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .share-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 0.95em;
+  }
+  .share-btn.primary {
+    background: linear-gradient(135deg, var(--accent), #1a4fc9);
+    color: white;
+  }
+  .share-btn.secondary {
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .leaderboard-preview {
+    margin-top: 40px;
+    text-align: left;
+  }
+  .leaderboard-preview h3 {
+    font-size: 1.1em;
+    margin-bottom: 16px;
+    color: var(--muted);
+  }
+  .lb-entry {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--card);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+  .lb-rank {
+    font-weight: 800;
+    min-width: 30px;
+    color: var(--gold);
+  }
+  .lb-name { flex: 1; }
+  .lb-score { font-weight: 700; color: var(--accent); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    .intro h2 { font-size: 1.6em; }
+    .question-text { font-size: 1.1em; }
+    .score-circle { width: 150px; height: 150px; }
+    .score-num { font-size: 2.8em; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a href="/" class="back-link">← Back</a>
+  <h1>🧠 NBJ <span>IQ Test</span></h1>
+</header>
+
+<div class="container">
+  <!-- Intro Screen -->
+  <div class="intro" id="intro">
+    <h2>How Smart Are You?</h2>
+    <p>15 questions. 30 seconds each. Pattern recognition, logic, and verbal reasoning. Your score gets added to the NBJ leaderboard.</p>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num">15</div>
+        <div class="stat-label">Questions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">7:30</div>
+        <div class="stat-label">Max Time</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">150</div>
+        <div class="stat-label">Max Score</div>
+      </div>
+    </div>
+    <button class="btn" onclick="startTest()">Start Test</button>
+  </div>
+
+  <!-- Question Screen -->
+  <div class="question-screen" id="questionScreen">
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+    </div>
+    <div class="timer" id="timer">0:30</div>
+    <div class="question-num" id="questionNum">Question 1 of 15</div>
+    <div class="question-card">
+      <div class="question-text" id="questionText"></div>
+      <div class="pattern-grid hidden" id="patternGrid"></div>
+      <div class="options" id="options"></div>
+    </div>
+  </div>
+
+  <!-- Results Screen -->
+  <div class="results" id="results">
+    <div class="score-circle">
+      <div class="score-num" id="finalScore">0</div>
+      <div class="score-label">IQ Score</div>
+    </div>
+    <div class="result-title" id="resultTitle">Genius Level</div>
+    <div class="result-desc" id="resultDesc">You're in the top 2% of test takers.</div>
+    <div class="result-stats">
+      <div class="result-stat">
+        <div class="result-stat-num" id="correctCount">0</div>
+        <div class="result-stat-label">Correct</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-num" id="avgTime">0s</div>
+        <div class="result-stat-label">Avg Time</div>
+      </div>
+      <div class="result-stat">
+        <div class="result-stat-num" id="percentile">0%</div>
+        <div class="result-stat-label">Percentile</div>
+      </div>
+    </div>
+    <div class="share-btns">
+      <button class="share-btn primary" onclick="shareResult()">Share Result</button>
+      <button class="share-btn secondary" onclick="retakeTest()">Try Again</button>
+    </div>
+    <div class="leaderboard-preview">
+      <h3>🏆 Top Scores</h3>
+      <div id="leaderboard"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    type: 'pattern',
+    text: 'What comes next in the sequence?',
+    pattern: ['2', '4', '8', '16', '32', '?'],
+    options: ['48', '64', '56', '128'],
+    correct: 1
+  },
+  {
+    type: 'verbal',
+    text: 'BOOK is to READING as FORK is to:',
+    options: ['Kitchen', 'Eating', 'Metal', 'Spoon'],
+    correct: 1
+  },
+  {
+    type: 'logic',
+    text: 'If all Bloops are Razzies and all Razzies are Lazzies, then all Bloops are definitely Lazzies.',
+    options: ['True', 'False', 'Cannot be determined'],
+    correct: 0
+  },
+  {
+    type: 'pattern',
+    text: 'Complete the pattern: 1, 1, 2, 3, 5, 8, ?',
+    options: ['11', '12', '13', '15'],
+    correct: 2
+  },
+  {
+    type: 'spatial',
+    text: 'If you fold a square paper in half diagonally, what shape do you get?',
+    options: ['Rectangle', 'Triangle', 'Pentagon', 'Trapezoid'],
+    correct: 1
+  },
+  {
+    type: 'verbal',
+    text: 'Which word does NOT belong?',
+    options: ['Apple', 'Banana', 'Carrot', 'Orange'],
+    correct: 2
+  },
+  {
+    type: 'math',
+    text: 'If a shirt costs $20 after a 20% discount, what was the original price?',
+    options: ['$24', '$25', '$26', '$28'],
+    correct: 1
+  },
+  {
+    type: 'logic',
+    text: 'Some cats are black. Some black things are chairs. Therefore:',
+    options: ['Some cats are chairs', 'No cats are chairs', 'Cannot be determined', 'All chairs are black'],
+    correct: 2
+  },
+  {
+    type: 'pattern',
+    text: 'What number should replace the question mark? 3, 6, 11, 18, 27, ?',
+    options: ['36', '38', '40', '42'],
+    correct: 1
+  },
+  {
+    type: 'verbal',
+    text: 'ELOQUENT is the opposite of:',
+    options: ['Fluent', 'Articulate', 'Inarticulate', 'Talkative'],
+    correct: 2
+  },
+  {
+    type: 'spatial',
+    text: 'How many sides does a dodecagon have?',
+    options: ['10', '11', '12', '14'],
+    correct: 2
+  },
+  {
+    type: 'logic',
+    text: 'If it takes 5 machines 5 minutes to make 5 widgets, how long would it take 100 machines to make 100 widgets?',
+    options: ['1 minute', '5 minutes', '20 minutes', '100 minutes'],
+    correct: 1
+  },
+  {
+    type: 'pattern',
+    text: 'Find the missing number: 7, 14, 28, 56, ?',
+    options: ['84', '98', '112', '128'],
+    correct: 2
+  },
+  {
+    type: 'verbal',
+    text: 'BENEVOLENT : MALEVOLENT :: KIND : ?',
+    options: ['Generous', 'Cruel', 'Gentle', 'Warm'],
+    correct: 1
+  },
+  {
+    type: 'math',
+    text: 'A clock shows 3:15. What is the angle between the hour and minute hands?',
+    options: ['0°', '7.5°', '15°', '22.5°'],
+    correct: 1
+  }
+];
+
+let currentQuestion = 0;
+let score = 0;
+let correctAnswers = 0;
+let totalTime = 0;
+let questionTimes = [];
+let timerInterval = null;
+let timeLeft = 30;
+
+function startTest() {
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('questionScreen').classList.add('active');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = questions[currentQuestion];
+  document.getElementById('questionNum').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+  document.getElementById('progressFill').style.width = `${((currentQuestion) / questions.length) * 100}%`;
+  document.getElementById('questionText').textContent = q.text;
+  
+  const optionsDiv = document.getElementById('options');
+  optionsDiv.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.textContent = opt;
+    btn.onclick = () => selectAnswer(i);
+    optionsDiv.appendChild(btn);
+  });
+
+  // Start timer
+  timeLeft = 30;
+  updateTimer();
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      selectAnswer(-1); // Time's up
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const timerEl = document.getElementById('timer');
+  const seconds = timeLeft % 60;
+  timerEl.textContent = `0:${seconds.toString().padStart(2, '0')}`;
+  timerEl.className = timeLeft <= 10 ? 'timer warning' : 'timer';
+}
+
+function selectAnswer(index) {
+  clearInterval(timerInterval);
+  const q = questions[currentQuestion];
+  const timeTaken = 30 - timeLeft;
+  questionTimes.push(timeTaken);
+  totalTime += timeTaken;
+
+  const options = document.querySelectorAll('.option');
+  options.forEach((opt, i) => {
+    opt.onclick = null;
+    if (i === q.correct) {
+      opt.classList.add('correct');
+    } else if (i === index && index !== q.correct) {
+      opt.classList.add('wrong');
+    }
+  });
+
+  if (index === q.correct) {
+    correctAnswers++;
+    // Score based on speed (max 10 per question)
+    const speedBonus = Math.max(0, Math.floor((30 - timeTaken) / 3));
+    score += 7 + speedBonus;
+  }
+
+  setTimeout(() => {
+    currentQuestion++;
+    if (currentQuestion < questions.length) {
+      showQuestion();
+    } else {
+      showResults();
+    }
+  }, 1000);
+}
+
+function showResults() {
+  document.getElementById('questionScreen').classList.remove('active');
+  document.getElementById('results').classList.add('active');
+
+  // Calculate IQ score (scaled 70-150)
+  const rawScore = (correctAnswers / questions.length) * 100;
+  const iqScore = Math.round(70 + (rawScore * 0.8));
+  
+  document.getElementById('finalScore').textContent = iqScore;
+  document.getElementById('correctCount').textContent = `${correctAnswers}/${questions.length}`;
+  document.getElementById('avgTime').textContent = `${Math.round(totalTime / questions.length)}s`;
+  
+  // Percentile based on IQ
+  let percentile = Math.min(99, Math.max(1, Math.round((iqScore - 70) * 1.2)));
+  document.getElementById('percentile').textContent = `${percentile}%`;
+
+  // Result title and description
+  let title, desc;
+  if (iqScore >= 130) {
+    title = '🧠 Genius Level';
+    desc = "You're in the top 2% of test takers. Your pattern recognition and logical reasoning are exceptional.";
+  } else if (iqScore >= 115) {
+    title = '⚡ Above Average';
+    desc = "You scored higher than 84% of test takers. Strong analytical thinking!";
+  } else if (iqScore >= 100) {
+    title = '✨ Average';
+    desc = "You're right in the middle of the pack. Solid cognitive performance!";
+  } else if (iqScore >= 85) {
+    title = '📚 Below Average';
+    desc = "Room for improvement, but don't worry — IQ tests only measure certain types of intelligence.";
+  } else {
+    title = '💪 Keep Practicing';
+    desc = "This test doesn't define you. Try again when you're more focused!";
+  }
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultDesc').textContent = desc;
+
+  // Save score
+  saveScore(iqScore);
+  loadLeaderboard();
+}
+
+function saveScore(iqScore) {
+  const user = localStorage.getItem('nbj_user');
+  if (!user) return;
+  
+  const scores = JSON.parse(localStorage.getItem('nbj_iq_scores') || '[]');
+  scores.push({
+    user: user,
+    score: iqScore,
+    correct: correctAnswers,
+    time: totalTime,
+    date: new Date().toISOString()
+  });
+  scores.sort((a, b) => b.score - a.score);
+  localStorage.setItem('nbj_iq_scores', JSON.stringify(scores.slice(0, 100)));
+}
+
+function loadLeaderboard() {
+  const scores = JSON.parse(localStorage.getItem('nbj_iq_scores') || '[]');
+  const lbDiv = document.getElementById('leaderboard');
+  
+  if (scores.length === 0) {
+    lbDiv.innerHTML = '<div class="lb-entry"><div class="lb-name" style="color:var(--muted)">No scores yet. Be the first!</div></div>';
+    return;
+  }
+
+  lbDiv.innerHTML = scores.slice(0, 5).map((s, i) => `
+    <div class="lb-entry">
+      <div class="lb-rank">#${i + 1}</div>
+      <div class="lb-name">${s.user}</div>
+      <div class="lb-score">${s.score}</div>
+    </div>
+  `).join('');
+}
+
+function shareResult() {
+  const score = document.getElementById('finalScore').textContent;
+  const text = `I scored ${score} on the NBJ IQ Test! 🧠 Think you can beat me? newsbyjames.com/iq-test/`;
+  
+  if (navigator.share) {
+    navigator.share({ text });
+  } else {
+    navigator.clipboard.writeText(text);
+    alert('Result copied to clipboard!');
+  }
+}
+
+function retakeTest() {
+  currentQuestion = 0;
+  score = 0;
+  correctAnswers = 0;
+  totalTime = 0;
+  questionTimes = [];
+  
+  document.getElementById('results').classList.remove('active');
+  document.getElementById('intro').classList.remove('hidden');
+}
+
+// Check if user is logged in
+window.onload = function() {
+  const user = localStorage.getItem('nbj_user');
+  if (!user) {
+    // Could redirect to login, but allow anonymous play for now
+  }
+  loadLeaderboard();
+};
+</script>
+</body>
+</html>

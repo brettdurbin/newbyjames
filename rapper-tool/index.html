@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🎤 The Rap Rating Tool</title>
+<style>
+  :root {
+    --bg: #0a0f16;
+    --card: #101720;
+    --accent: #2f6fed;
+    --accent2: #d4a017;
+    --gold: #d4a017;
+    --text: #e8edf5;
+    --muted: #7f8998;
+    --border: #1d2632;
+    --green: #27c281;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background:
+      radial-gradient(circle at top, rgba(47,111,237,0.18), transparent 28%),
+      linear-gradient(180deg, #0b1118 0%, #070b11 100%);
+    color: var(--text);
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+
+  header {
+    padding: 18px 20px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10, 15, 22, 0.92);
+    backdrop-filter: blur(10px);
+    z-index: 100;
+    box-shadow: 0 10px 30px rgba(0,0,0,.18);
+  }
+  header h1 { font-size: 1.5em; letter-spacing: -0.03em; }
+  header h1 span { color: var(--accent2); }
+  .user-badge {
+    display: inline-block;
+    margin-top: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(212,160,23,.16);
+    color: #f4d06f;
+    border: 1px solid rgba(212,160,23,.22);
+  }
+  .sync-status {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .sync-status.syncing { color: var(--gold); }
+  .sync-status.synced { color: var(--green); }
+  .sync-status.error { color: var(--accent); }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 76px;
+    background: rgba(10, 15, 22, 0.92);
+    backdrop-filter: blur(10px);
+    z-index: 99;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.02);
+  }
+  .tab.active {
+    color: white;
+    border-color: rgba(47,111,237,.35);
+    background: linear-gradient(135deg, rgba(47,111,237,.9), rgba(20,63,122,.9));
+    box-shadow: 0 10px 24px rgba(47,111,237,.2);
+  }
+  .tab-content { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
+  .tab-content.active { display: block; }
+
+  .artist-card {
+    background: linear-gradient(180deg, rgba(16,23,32,0.96), rgba(12,18,26,0.96));
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 12px 28px rgba(0,0,0,.18);
+  }
+  .artist-card:hover, .artist-card:active {
+    border-color: rgba(47,111,237,.4);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 36px rgba(0,0,0,.24);
+  }
+  .rank {
+    font-size: 1.4em;
+    font-weight: 800;
+    min-width: 32px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .rank.top1 { color: var(--gold); }
+  .rank.top2 { color: #c0c0c0; }
+  .rank.top3 { color: #cd7f32; }
+  .artist-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--border);
+    flex-shrink: 0;
+  }
+  .artist-info { flex: 1; min-width: 0; }
+  .artist-name { font-size: 1em; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .artist-score-row { display: flex; gap: 8px; margin-top: 4px; font-size: 12px; flex-wrap: wrap; }
+  .score-pill {
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 11px;
+  }
+  .score-user { background: rgba(47,111,237,0.14); color: #8eb8ff; }
+  .score-avg { background: rgba(212,160,23,0.14); color: var(--gold); }
+  .expand-arrow { color: var(--muted); font-size: 18px; }
+
+  .rate-panel {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .rate-panel h3 { margin-bottom: 14px; font-size: 1.1em; }
+  .category-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .category-row:last-child { border-bottom: none; }
+  .category-label { font-weight: 600; font-size: 14px; }
+  .category-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .slider-wrap { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .slider-wrap input[type=range] {
+    width: 100px;
+    accent-color: var(--accent);
+  }
+  .slider-val {
+    min-width: 28px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--accent);
+  }
+
+  .evidence-box {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+  }
+  .evidence-box textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    padding: 12px;
+    font-size: 14px;
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .evidence-entry {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .evidence-entry .ev-author { font-weight: 700; color: var(--accent); }
+  .evidence-entry .ev-date { color: var(--muted); font-size: 11px; }
+
+  .btn {
+    padding: 12px 20px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    -webkit-appearance: none;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+  .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+  .btn-small { padding: 8px 14px; font-size: 12px; }
+
+  .add-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .add-bar input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 14px;
+    -webkit-appearance: none;
+  }
+
+  .method-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 10px;
+    border: 1px solid var(--border);
+  }
+  .method-card h3 { color: var(--accent); margin-bottom: 8px; font-size: 1em; }
+  .method-card .weight { color: var(--gold); font-weight: 700; }
+  .view-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+  }
+  .filter-btn {
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .18s ease;
+  }
+  .filter-btn.active {
+    background: linear-gradient(135deg, var(--accent), #143f7a);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(233,69,96,.22);
+  }
+  .filter-note {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  .profile-panel,
+  .profile-stat-card {
+    background: linear-gradient(180deg, rgba(16,23,32,0.96), rgba(12,18,26,0.96));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.18);
+  }
+  .profile-panel {
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .profile-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .profile-stat-card {
+    padding: 14px;
+  }
+  .profile-stat-label {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .profile-stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .profile-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .iq-panel {
+    background: linear-gradient(180deg, rgba(16,23,32,0.96), rgba(12,18,26,0.96));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 12px 28px rgba(0,0,0,.18);
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .iq-option {
+    width: 100%;
+    text-align: left;
+    background: #0d141d;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .iq-option:hover { border-color: rgba(47,111,237,.35); }
+  .iq-meta {
+    display:flex;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+    color:var(--muted);
+    font-size:12px;
+    margin-bottom:12px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+  }
+
+  #detail-view { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
+  .back-btn {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 15px;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 14px;
+    padding: 0;
+  }
+  .detail-header { text-align: center; margin-bottom: 20px; }
+  .detail-header h2 { font-size: 1.5em; }
+  .detail-scores {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 14px 0;
+    flex-wrap: wrap;
+  }
+  .detail-score-box {
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    min-width: 90px;
+  }
+  .detail-score-box .label { font-size: 11px; color: var(--muted); }
+  .detail-score-box .val { font-size: 1.4em; font-weight: 800; }
+  .detail-score-box.user .val { color: var(--accent); }
+  .detail-score-box.avg .val { color: var(--gold); }
+  .breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 14px;
+  }
+  .breakdown-table th, .breakdown-table td {
+    padding: 10px 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .breakdown-table th { color: var(--muted); font-weight: 600; }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .toast.show { opacity: 1; }
+
+  select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    font-size: 14px;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎤 The <span>Rap</span> Rating Tool</h1>
+  <div class="user-badge" id="user-badge">Loading...</div>
+  <div class="sync-status" id="sync-status">Loading...</div>
+  <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:8px;">build 2026-03-24-0548</div>
+</header>
+
+<div class="tabs">
+  <div class="tab" data-tab="profile" onclick="switchTab('profile')">Profile</div>
+  <div class="tab" data-tab="iq" onclick="switchTab('iq')">IQ Test</div>
+  <div class="tab active" data-tab="rankings" onclick="switchTab('rankings')">Rankings</div>
+  <div class="tab" data-tab="rate" onclick="switchTab('rate')">Rate</div>
+  <div class="tab" data-tab="evidence" onclick="switchTab('evidence')">Evidence</div>
+  <div class="tab" data-tab="method" onclick="switchTab('method')">Method</div>
+</div>
+
+<div class="tab-content" id="tab-profile">
+  <div id="profile-panel-container"></div>
+</div>
+
+<div class="tab-content" id="tab-iq">
+  <div id="iq-test-container"></div>
+</div>
+
+<div class="tab-content active" id="tab-rankings">
+  <div class="view-filters">
+    <button class="filter-btn active" id="filter-me" onclick="setViewMode('me')">Me</button>
+    <button class="filter-btn" id="filter-friends" onclick="setViewMode('friends')">Me + Friends</button>
+    <button class="filter-btn" id="filter-everyone" onclick="setViewMode('everyone')">Everyone</button>
+  </div>
+  <div class="filter-note" id="filter-note">Showing only your ratings.</div>
+  <div class="add-bar">
+    <input type="text" id="new-artist" placeholder="Add an artist..." onkeydown="if(event.key==='Enter')addArtist()">
+    <button class="btn btn-primary btn-small" onclick="addArtist()">+ Add</button>
+  </div>
+  <div id="rankings-list"></div>
+</div>
+
+<div class="tab-content" id="tab-rate">
+  <div style="margin-bottom:14px;">
+    <select id="rate-artist-select" onchange="loadRatePanel()">
+      <option value="">Select an artist to rate...</option>
+    </select>
+  </div>
+  <div id="rate-panel-container"></div>
+</div>
+
+<div class="tab-content" id="tab-evidence">
+  <div style="margin-bottom:14px;">
+    <select id="ev-artist-select" onchange="loadEvidence()">
+      <option value="">Select an artist...</option>
+    </select>
+  </div>
+  <div id="evidence-container"></div>
+</div>
+
+<div class="tab-content" id="tab-method">
+  <h2 style="margin-bottom:14px;font-size:1.2em;">Scoring Methodology</h2>
+  <p style="color:var(--muted);margin-bottom:16px;font-size:13px;">Each artist is rated across 8 categories. Scores are 1-10. Final score = weighted average.</p>
+  <div id="method-cards"></div>
+</div>
+
+<div id="detail-view"></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ API CONFIG ============
+const API_URL = '/.netlify/functions/nbj';
+
+async function api(action, payload = {}) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload })
+  });
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Request failed');
+  return json;
+}
+
+// ============ CONFIG ============
+const CATEGORIES = [
+  { id:'lyrics', name:'Lyricism', weight:20, desc:'Wordplay, metaphors, vocabulary, storytelling' },
+  { id:'flow', name:'Flow & Delivery', weight:15, desc:'Cadence, rhythm, beat-riding, voice' },
+  { id:'versatility', name:'Versatility', weight:10, desc:'Range across styles, beats, subjects' },
+  { id:'impact', name:'Cultural Impact', weight:15, desc:'Influence, memorable moments, quotability' },
+  { id:'catalog', name:'Catalog Depth', weight:15, desc:'Consistency, no-skip albums' },
+  { id:'authenticity', name:'Authenticity', weight:10, desc:'Realness, staying true' },
+  { id:'hits', name:'Hit-Making', weight:10, desc:'Commercial success, anthems' },
+  { id:'xfactor', name:'X-Factor', weight:5, desc:'Charisma, aura, energy' },
+];
+
+const DEFAULT_ARTISTS = ['Lil Wayne','Kodak Black','YoungBoy NBA','Drake','Kendrick Lamar','J. Cole','Future','21 Savage','Travis Scott','Eminem'];
+const IQ_QUESTIONS = [
+  { q: '2, 6, 12, 20, 30, ?', choices: ['36','40','42','48'], answer: 2 },
+  { q: 'Which word does NOT belong?', choices: ['Triangle','Square','Circle','Compass'], answer: 3 },
+  { q: 'If all BLOPS are RIMS and all RIMS are TAZ, then all BLOPS are TAZ.', choices: ['Always true','Sometimes true','Never true','Cannot tell'], answer: 0 },
+  { q: 'Find the next pattern: A, C, F, J, O, ?', choices: ['S','T','U','V'], answer: 2 },
+  { q: 'A bat and ball cost $1.10 total. Bat costs $1 more than ball. Ball costs?', choices: ['5¢','10¢','15¢','20¢'], answer: 0 },
+  { q: 'Which is the strongest analogy? Engine : Car :: Heart : ?', choices: ['Chest','Body','Blood','Lung'], answer: 1 },
+  { q: 'Which number is largest?', choices: ['0.9','0.89','0.909','0.899'], answer: 2 },
+  { q: 'If yesterday was two days before Thursday, what day is today?', choices: ['Wednesday','Thursday','Friday','Saturday'], answer: 1 },
+  { q: 'Complete the sequence: 81, 27, 9, 3, ?', choices: ['1','0','1/3','3/2'], answer: 0 },
+  { q: 'Which is the odd one out?', choices: ['Mercury','Venus','Mars','Moon'], answer: 3 },
+  { q: 'A man runs 1 mile south, 1 mile east, 1 mile north and ends where he started. Where could he be?', choices: ['Equator','North Pole','Sahara','London'], answer: 1 },
+  { q: 'If 5 machines make 5 widgets in 5 minutes, how long for 100 machines to make 100 widgets?', choices: ['5 min','20 min','100 min','500 min'], answer: 0 }
+];
+
+// Artist image mapping (using placeholder/wiki commons for now)
+const ARTIST_IMAGES = {
+  'Lil Wayne': 'https://i.scdn.co/image/ab6761610000e5eb320ea875ffe0d5a9e3c76c76',
+  'Kodak Black': 'https://i.scdn.co/image/ab6761610000e5eb59f8cfc8e71dcaf528b0f3dd',
+  'YoungBoy NBA': 'https://i.scdn.co/image/ab6761610000e5eb24b4bc97a2e66c1abe5eb9a1',
+  'Drake': 'https://i.scdn.co/image/ab6761610000e5eb4293385d324db8558179afd9',
+  'Kendrick Lamar': 'https://i.scdn.co/image/ab6761610000e5eb437b9e2a82505b3d93ff1022',
+  'J. Cole': 'https://i.scdn.co/image/ab6761610000e5ebadd503b411a712e277895c8a',
+  'Future': 'https://i.scdn.co/image/ab6761610000e5ebdf9a1555f53a20087b8c5a5c',
+  '21 Savage': 'https://i.scdn.co/image/ab6761610000e5eb9f8d9cac4fa06ac20f46e844',
+  'Travis Scott': 'https://i.scdn.co/image/ab6761610000e5eb19c2790744c792d05570bb71',
+  'Eminem': 'https://i.scdn.co/image/ab6761610000e5eba00b11c129b27a88fc72f36b',
+  'Kanye West': 'https://i.scdn.co/image/ab6761610000e5eb6e835a500e791bf9c27a422a',
+  'Jay-Z': 'https://i.scdn.co/image/ab6761610000e5eb0b776427d31aa1d78df47818',
+  'Nas': 'https://i.scdn.co/image/ab6761610000e5eb8ff6d7bf61b4ef40a59c5a0f',
+  '50 Cent': 'https://i.scdn.co/image/ab6761610000e5eb31f6ab8b6a23c9eef0f2f204',
+  'Snoop Dogg': 'https://i.scdn.co/image/ab6761610000e5ebbf315e1e93e966b2a5d4e0ca',
+  'Ice Cube': 'https://i.scdn.co/image/ab6761610000e5eb0e53c8cf597e1dca2c4b33b4',
+  'Lil Baby': 'https://i.scdn.co/image/ab6761610000e5eb695489d4c1d5d0c2ccec31fc',
+  'Young Thug': 'https://i.scdn.co/image/ab6761610000e5eb0d2e5c9e2b1e6b0e6e0f0f0f',
+  'Gunna': 'https://i.scdn.co/image/ab6761610000e5eb0284e57d4ca8f5a69ccf43eb',
+  'Migos': 'https://i.scdn.co/image/ab6761610000e5eb50defaf9fc059a1efc541f4c'
+};
+
+function getArtistImage(name) {
+  if (ARTIST_IMAGES[name]) return ARTIST_IMAGES[name];
+  // Fallback: generate placeholder with initials
+  const initials = name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e94560&color=fff&size=96&bold=true`;
+}
+
+let currentUser = null;
+let currentUserId = null;
+let data = { artists: {}, ratings: {}, evidence: {} };
+let communityData = { artists: {}, ratings: {}, evidence: {} };
+let viewMode = 'me';
+let iqTestState = null;
+let iqTimerInterval = null;
+let syncTimeout = null;
+
+// ============ AUTH ============
+function getCurrentUser() {
+  const raw = localStorage.getItem('nbj_user');
+  if (raw) {
+    const user = JSON.parse(raw);
+    if (user.handle === '@james' && (user.id === 'local-james' || user.id === '2')) {
+      user.id = 2;
+      localStorage.setItem('nbj_user', JSON.stringify(user));
+    }
+    currentUserId = user.id;
+    return user.handle;
+  }
+  return null;
+}
+
+function getFriendHandles() {
+  try {
+    const raw = localStorage.getItem(`nbj_friends_${currentUserId}`);
+    const list = raw ? JSON.parse(raw) : [];
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+function mergeDataSets(records) {
+  const merged = { artists: {}, ratings: {}, evidence: {} };
+  records.forEach(record => {
+    if (!record) return;
+    Object.keys(record.artists || {}).forEach(artist => {
+      merged.artists[artist] = true;
+    });
+    Object.entries(record.ratings || {}).forEach(([artist, artistRatings]) => {
+      if (!merged.ratings[artist]) merged.ratings[artist] = {};
+      Object.entries(artistRatings || {}).forEach(([handle, categories]) => {
+        merged.ratings[artist][handle] = { ...(merged.ratings[artist][handle] || {}), ...(categories || {}) };
+      });
+    });
+    Object.entries(record.evidence || {}).forEach(([artist, entries]) => {
+      if (!merged.evidence[artist]) merged.evidence[artist] = [];
+      merged.evidence[artist].push(...(entries || []));
+    });
+  });
+  return merged;
+}
+
+function getVisibleRatings(artist) {
+  if (viewMode === 'everyone') return communityData.ratings[artist] || {};
+  if (viewMode === 'friends') {
+    const allowed = new Set([currentUser, ...getFriendHandles()]);
+    const all = communityData.ratings[artist] || {};
+    return Object.fromEntries(Object.entries(all).filter(([handle]) => allowed.has(handle)));
+  }
+  return data.ratings[artist] || {};
+}
+
+function setViewMode(mode) {
+  viewMode = mode;
+  document.getElementById('filter-me').classList.toggle('active', mode === 'me');
+  document.getElementById('filter-friends').classList.toggle('active', mode === 'friends');
+  document.getElementById('filter-everyone').classList.toggle('active', mode === 'everyone');
+
+  const friendCount = getFriendHandles().length;
+  const note = document.getElementById('filter-note');
+  if (mode === 'everyone') note.textContent = 'Showing all users on the app.';
+  else if (mode === 'friends') note.textContent = friendCount ? `Showing you + ${friendCount} friend${friendCount === 1 ? '' : 's'}.` : 'Showing only your ratings until friends are added.';
+  else note.textContent = 'Showing only your ratings.';
+
+  renderRankings();
+}
+
+// ============ SYNC ============
+function setSyncStatus(status, text) {
+  const el = document.getElementById('sync-status');
+  el.className = 'sync-status ' + status;
+  el.textContent = text;
+}
+
+async function loadFromCloud() {
+  if (!currentUserId) return false;
+  
+  try {
+    setSyncStatus('syncing', '☁️ Loading...');
+    const result = await api('get_ratings', { userId: currentUserId });
+    
+    if (result.row && result.row.data) {
+      data = normalizeDataShape(result.row.data);
+      setSyncStatus('synced', '☁️ Synced');
+      return true;
+    } else {
+      // No cloud data, use defaults
+      initDefaultData();
+      setSyncStatus('synced', '☁️ Synced');
+      return false;
+    }
+  } catch (err) {
+    console.error('Load error:', err);
+    setSyncStatus('error', '⚠️ Offline mode');
+    // Try localStorage fallback
+    const local = localStorage.getItem('rapRatingTool_v3');
+    if (local) data = normalizeDataShape(JSON.parse(local));
+    else initDefaultData();
+    return false;
+  }
+}
+
+async function loadCommunityData() {
+  try {
+    const result = await api('community_ratings');
+    const records = (result.rows || []).map(row => row.data).filter(Boolean);
+    communityData = mergeDataSets(records.length ? records : [data]);
+  } catch (err) {
+    console.error('Community load error:', err);
+    communityData = mergeDataSets([data]);
+  }
+}
+
+async function saveToCloud() {
+  if (!currentUserId) return;
+  
+  // Also save locally as backup
+  localStorage.setItem('rapRatingTool_v3', JSON.stringify(data));
+  
+  try {
+    setSyncStatus('syncing', '☁️ Saving...');
+    await api('save_ratings', { userId: currentUserId, data });
+    await loadCommunityData();
+    setSyncStatus('synced', '☁️ Synced');
+  } catch (err) {
+    console.error('Save error:', err);
+    setSyncStatus('error', '⚠️ Save failed');
+  }
+}
+
+function debouncedSave() {
+  if (syncTimeout) clearTimeout(syncTimeout);
+  syncTimeout = setTimeout(saveToCloud, 1000);
+}
+
+function normalizeDataShape(target) {
+  if (!target.profileStats) {
+    target.profileStats = {
+      iqScore: null,
+      iqTakenAt: null,
+      triviaStreak: 0,
+      gameHighScore: null
+    };
+  }
+  if (target.profileStats.iqTakenAt === undefined) target.profileStats.iqTakenAt = null;
+  return target;
+}
+
+function initDefaultData() {
+  data = { artists: {}, ratings: {}, evidence: {}, profileStats: { iqScore: null, iqTakenAt: null, triviaStreak: 0, gameHighScore: null } };
+  DEFAULT_ARTISTS.forEach(a => {
+    data.artists[a] = true;
+    data.ratings[a] = {};
+    data.evidence[a] = [];
+  });
+}
+
+// ============ SCORES ============
+function getScores(artist) {
+  const myRatings = data.ratings[artist] || {};
+  const ratings = getVisibleRatings(artist);
+  const users = Object.keys(ratings);
+  
+  let userScore = null;
+  if (myRatings[currentUser]) {
+    let total = 0, weight = 0;
+    CATEGORIES.forEach(c => {
+      const v = myRatings[currentUser][c.id];
+      if (v !== undefined) { total += v * c.weight; weight += c.weight; }
+    });
+    if (weight > 0) userScore = total / weight;
+  }
+  
+  let allScores = [];
+  users.forEach(u => {
+    let total = 0, weight = 0;
+    CATEGORIES.forEach(c => {
+      const v = ratings[u]?.[c.id];
+      if (v !== undefined) { total += v * c.weight; weight += c.weight; }
+    });
+    if (weight > 0) allScores.push(total / weight);
+  });
+  
+  const avg = allScores.length > 0 ? allScores.reduce((a,b) => a+b, 0) / allScores.length : null;
+  return { userScore, avg, raterCount: users.length };
+}
+
+// ============ UI ============
+function renderRankings() {
+  const list = document.getElementById('rankings-list');
+  const sorted = Object.keys(data.artists).map(a => ({ name: a, ...getScores(a) }))
+    .sort((a,b) => (b.avg||0) - (a.avg||0));
+
+  list.innerHTML = sorted.map((a, i) => {
+    const rankClass = i===0?'top1':i===1?'top2':i===2?'top3':'';
+    const imgUrl = getArtistImage(a.name);
+    return `<div class="artist-card" onclick="showDetail('${a.name.replace(/'/g,"\\'")}')">
+      <div class="rank ${rankClass}">${i+1}</div>
+      <img class="artist-img" src="${imgUrl}" alt="${a.name}" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(a.name)}&background=e94560&color=fff&size=96'">
+      <div class="artist-info">
+        <div class="artist-name">${a.name}</div>
+        <div class="artist-score-row">
+          ${a.userScore!==null?`<span class="score-pill score-user">You: ${a.userScore.toFixed(1)}</span>`:'<span class="score-pill score-user">You: —</span>'}
+          ${a.avg!==null?`<span class="score-pill score-avg">View: ${a.avg.toFixed(1)} (${a.raterCount})</span>`:'<span class="score-pill score-avg">View: —</span>'}
+        </div>
+      </div>
+      <div class="expand-arrow">›</div>
+    </div>`;
+  }).join('');
+}
+
+function showDetail(artist) {
+  const scores = getScores(artist);
+  const dv = document.getElementById('detail-view');
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  dv.style.display = 'block';
+
+  const myRatings = data.ratings[artist]?.[currentUser] || {};
+  let rows = CATEGORIES.map(c => {
+    const v = myRatings[c.id];
+    return `<tr>
+      <td>${c.name} <span style="color:var(--muted);font-size:10px">(${c.weight}%)</span></td>
+      <td style="color:var(--accent);font-weight:700">${v!==undefined?v:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  const evs = (data.evidence[artist]||[]).slice(-5).reverse();
+  const evHTML = evs.length ? evs.map(e =>
+    `<div class="evidence-entry"><span class="ev-author">${e.author}</span> <span class="ev-date">${e.date}</span><br>${e.text}</div>`
+  ).join('') : '<p style="color:var(--muted);font-size:13px">No evidence yet.</p>';
+
+  dv.innerHTML = `
+    <button class="back-btn" onclick="closeDetail()">← Back</button>
+    <div class="detail-header">
+      <h2>${artist}</h2>
+      <div class="detail-scores">
+        <div class="detail-score-box user"><div class="label">Your Score</div><div class="val">${scores.userScore!==null?scores.userScore.toFixed(1):'—'}</div></div>
+        <div class="detail-score-box avg"><div class="label">Current View (${scores.raterCount})</div><div class="val">${scores.avg!==null?scores.avg.toFixed(1):'—'}</div></div>
+      </div>
+    </div>
+    <h3 style="margin-bottom:10px;font-size:1em;">Your Breakdown</h3>
+    <table class="breakdown-table">
+      <tr><th>Category</th><th>Score</th></tr>
+      ${rows}
+    </table>
+    <h3 style="margin-top:20px;font-size:1em;">Recent Evidence</h3>
+    ${evHTML}
+    <div style="margin-top:14px;text-align:center;">
+      <button class="btn btn-primary" onclick="closeDetail();switchTab('rate');document.getElementById('rate-artist-select').value='${artist.replace(/'/g,"\\'")}';loadRatePanel();">Rate ${artist}</button>
+    </div>
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('detail-view').style.display = 'none';
+  switchTab('rankings');
+}
+
+function populateSelects() {
+  const names = Object.keys(data.artists).sort();
+  ['rate-artist-select','ev-artist-select'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Select an artist...</option>' +
+      names.map(n => `<option value="${n}">${n}</option>`).join('');
+  });
+}
+
+function switchTab(tab) {
+  document.getElementById('detail-view').style.display = 'none';
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.toggle('active', t.id==='tab-'+tab));
+}
+
+function loadRatePanel() {
+  const artist = document.getElementById('rate-artist-select').value;
+  const container = document.getElementById('rate-panel-container');
+  if (!artist) { container.innerHTML = ''; return; }
+
+  const existing = data.ratings[artist]?.[currentUser] || {};
+  container.innerHTML = `
+    <div class="rate-panel">
+      <h3>Rating: ${artist}</h3>
+      ${CATEGORIES.map(c => `
+        <div class="category-row">
+          <div style="flex:1;min-width:0;">
+            <div class="category-label">${c.name}</div>
+            <div class="category-desc">${c.desc}</div>
+          </div>
+          <div class="slider-wrap">
+            <input type="range" min="1" max="10" value="${existing[c.id]||5}" id="sl-${c.id}" oninput="document.getElementById('sv-${c.id}').textContent=this.value">
+            <div class="slider-val" id="sv-${c.id}">${existing[c.id]||5}</div>
+          </div>
+        </div>
+      `).join('')}
+      <div style="margin-top:14px;text-align:center;">
+        <button class="btn btn-primary" onclick="submitRating('${artist.replace(/'/g,"\\'")}')">Submit Rating</button>
+      </div>
+    </div>
+  `;
+}
+
+function submitRating(artist) {
+  if (!data.ratings[artist]) data.ratings[artist] = {};
+  if (!data.ratings[artist][currentUser]) data.ratings[artist][currentUser] = {};
+  CATEGORIES.forEach(c => {
+    data.ratings[artist][currentUser][c.id] = parseInt(document.getElementById('sl-'+c.id).value);
+  });
+  debouncedSave();
+  renderRankings();
+  renderProfileTab();
+  showToast('Rating saved! 🔥');
+}
+
+function loadEvidence() {
+  const artist = document.getElementById('ev-artist-select').value;
+  const container = document.getElementById('evidence-container');
+  if (!artist) { container.innerHTML = ''; return; }
+
+  const evs = data.evidence[artist] || [];
+  container.innerHTML = `
+    <div class="evidence-box">
+      <h3 style="margin-bottom:10px;font-size:1em;">Add Evidence for ${artist}</h3>
+      <textarea id="ev-text" placeholder="Drop a bar, reference a song, explain the score..."></textarea>
+      <div style="margin-top:10px;text-align:right;">
+        <button class="btn btn-primary btn-small" onclick="submitEvidence('${artist.replace(/'/g,"\\'")}')">Add Evidence</button>
+      </div>
+    </div>
+    <div>
+      <h3 style="margin-bottom:10px;font-size:1em;">Evidence History</h3>
+      ${evs.length ? evs.slice().reverse().map(e =>
+        `<div class="evidence-entry"><span class="ev-author">${e.author}</span> <span class="ev-date">${e.date}</span><br>${e.text}</div>`
+      ).join('') : '<p style="color:var(--muted);font-size:13px">No evidence yet.</p>'}
+    </div>
+  `;
+}
+
+function submitEvidence(artist) {
+  const text = document.getElementById('ev-text').value.trim();
+  if (!text) return;
+  if (!data.evidence[artist]) data.evidence[artist] = [];
+  data.evidence[artist].push({
+    author: currentUser,
+    date: new Date().toLocaleDateString(),
+    text: text
+  });
+  debouncedSave();
+  loadEvidence();
+  showToast('Evidence added! 📝');
+}
+
+function addArtist() {
+  const input = document.getElementById('new-artist');
+  const name = input.value.trim();
+  if (!name) return;
+  if (data.artists[name]) { showToast('Already exists!'); return; }
+  data.artists[name] = true;
+  data.ratings[name] = {};
+  data.evidence[name] = [];
+  debouncedSave();
+  renderRankings();
+  populateSelects();
+  renderProfileTab();
+  input.value = '';
+  showToast(`${name} added! 🎤`);
+}
+
+function renderProfileTab() {
+  const el = document.getElementById('profile-panel-container');
+  const stats = normalizeDataShape(data).profileStats;
+  const ratingCount = Object.values(data.ratings || {}).filter(r => r && r[currentUser]).length;
+  const artistCount = Object.keys(data.artists || {}).length;
+  const iqDisplay = stats.iqScore === null ? '—' : (currentUser === '@james' ? stats.iqScore : 'Hidden');
+
+  el.innerHTML = `
+    <div class="profile-panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Your Profile</div>
+          <h2 style="font-size:1.35rem;letter-spacing:-.03em;">${currentUser}</h2>
+        </div>
+        <div class="user-badge">Stats Hub</div>
+      </div>
+    </div>
+
+    <div class="profile-panel">
+      ${stats.iqScore === null ? `
+        <div class="profile-cta">
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;margin-bottom:4px;">Take the IQ Test</div>
+            <div style="color:var(--muted);font-size:13px;">You haven't taken it yet. Once you do, your score lives here.</div>
+          </div>
+          <button class="btn btn-primary btn-small" onclick="switchTab('iq');renderIqTest();">Take IQ Test</button>
+        </div>
+      ` : `
+        <div class="profile-cta">
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;margin-bottom:4px;">IQ Test Complete</div>
+            <div style="color:var(--muted);font-size:13px;">Your latest recorded IQ-style score is saved below.</div>
+          </div>
+        </div>
+      `}
+    </div>
+
+    <div class="profile-grid">
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">IQ Score</div>
+        <div class="profile-stat-value">${iqDisplay}</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">Trivia Streak</div>
+        <div class="profile-stat-value">${stats.triviaStreak ?? 0}</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">Game High Score</div>
+        <div class="profile-stat-value">${stats.gameHighScore ?? '—'}</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">Rap Ratings Submitted</div>
+        <div class="profile-stat-value">${ratingCount}</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">Artists In Pool</div>
+        <div class="profile-stat-value">${artistCount}</div>
+      </div>
+      <div class="profile-stat-card">
+        <div class="profile-stat-label">Admin Visibility</div>
+        <div class="profile-stat-value" style="font-size:1.05rem;">ON</div>
+      </div>
+    </div>
+  `;
+}
+
+function startIqTest() {
+  iqTestState = {
+    index: 0,
+    answers: [],
+    startedAt: Date.now(),
+    deadline: Date.now() + (5 * 60 * 1000)
+  };
+  if (iqTimerInterval) clearInterval(iqTimerInterval);
+  iqTimerInterval = setInterval(() => {
+    if (!iqTestState) return;
+    if (Date.now() >= iqTestState.deadline) completeIqTest();
+    else renderIqTest();
+  }, 1000);
+  renderIqTest();
+}
+
+function answerIqQuestion(choiceIndex) {
+  if (!iqTestState) return;
+  iqTestState.answers[iqTestState.index] = choiceIndex;
+  iqTestState.index += 1;
+  if (iqTestState.index >= IQ_QUESTIONS.length) completeIqTest();
+  else renderIqTest();
+}
+
+function completeIqTest() {
+  if (!iqTestState) return;
+  const raw = IQ_QUESTIONS.reduce((sum, q, i) => sum + (iqTestState.answers[i] === q.answer ? 1 : 0), 0);
+  const minutesUsed = (Date.now() - iqTestState.startedAt) / 60000;
+  const speedBonus = Math.max(0, Math.min(3, Math.round((5 - minutesUsed) * 0.8)));
+  const iqScore = Math.max(70, Math.min(126, Math.round(72 + (raw * 4) + speedBonus)));
+  data.profileStats.iqScore = iqScore;
+  data.profileStats.iqTakenAt = new Date().toISOString();
+  debouncedSave();
+  if (iqTimerInterval) clearInterval(iqTimerInterval);
+  iqTestState = null;
+  renderProfileTab();
+  renderIqTest();
+}
+
+function renderIqTest() {
+  const el = document.getElementById('iq-test-container');
+  const stats = normalizeDataShape(data).profileStats;
+
+  if (!iqTestState) {
+    el.innerHTML = `
+      <div class="iq-panel">
+        <div style="color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">Private Beta</div>
+        <h2 style="font-size:1.35rem;letter-spacing:-.03em;margin-bottom:8px;">5-Minute IQ Test</h2>
+        <p style="color:var(--muted);font-size:14px;line-height:1.5;">12 questions. Fast logic, sequences, patterns, and reasoning. During calibration, only admin sees the actual numeric score.</p>
+      </div>
+      <div class="iq-panel">
+        <div class="profile-cta">
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;margin-bottom:4px;">${stats.iqTakenAt ? 'Retake Available' : 'Ready to Start'}</div>
+            <div style="color:var(--muted);font-size:13px;">${stats.iqTakenAt ? `Last recorded: ${new Date(stats.iqTakenAt).toLocaleString()}` : 'You will have 5 minutes total and no backtracking.'}</div>
+          </div>
+          <button class="btn btn-primary btn-small" onclick="startIqTest()">${stats.iqTakenAt ? 'Retake IQ Test' : 'Start IQ Test'}</button>
+        </div>
+      </div>
+      ${stats.iqTakenAt ? `<div class="iq-panel"><strong>${currentUser === '@james' ? `Current private score: ${stats.iqScore}` : 'Your score has been recorded and hidden during calibration.'}</strong></div>` : ''}
+    `;
+    return;
+  }
+
+  const q = IQ_QUESTIONS[iqTestState.index];
+  const secondsLeft = Math.max(0, Math.ceil((iqTestState.deadline - Date.now()) / 1000));
+  const minutes = Math.floor(secondsLeft / 60).toString();
+  const seconds = (secondsLeft % 60).toString().padStart(2, '0');
+
+  el.innerHTML = `
+    <div class="iq-panel">
+      <div class="iq-meta">
+        <div>Question ${iqTestState.index + 1} / ${IQ_QUESTIONS.length}</div>
+        <div>Time Left ${minutes}:${seconds}</div>
+      </div>
+      <h2 style="font-size:1.25rem;line-height:1.35;letter-spacing:-.02em;">${q.q}</h2>
+      <div style="margin-top:14px;">
+        ${q.choices.map((choice, i) => `<button class="iq-option" onclick="answerIqQuestion(${i})">${String.fromCharCode(65 + i)}. ${choice}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderMethodology() {
+  document.getElementById('method-cards').innerHTML = CATEGORIES.map(c => `
+    <div class="method-card">
+      <h3>${c.name} <span class="weight">(${c.weight}%)</span></h3>
+      <p style="color:var(--muted);font-size:13px">${c.desc}</p>
+    </div>
+  `).join('');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ============ INIT ============
+async function init() {
+  currentUser = getCurrentUser();
+  if (!currentUser) {
+    window.location.href = '/';
+    return;
+  }
+  document.getElementById('user-badge').textContent = currentUser;
+  
+  await loadFromCloud();
+  await loadCommunityData();
+  
+  renderProfileTab();
+  renderIqTest();
+  renderRankings();
+  populateSelects();
+  renderMethodology();
+  setViewMode('me');
+}
+
+init();
+</script>
+</body>
+</html>
