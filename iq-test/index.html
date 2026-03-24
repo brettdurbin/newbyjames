@@ -347,11 +347,11 @@
     <p>15 questions. 30 seconds each. Pattern recognition, logic, and verbal reasoning. Your score gets added to the NBJ leaderboard.</p>
     <div class="stats">
       <div class="stat">
-        <div class="stat-num">15</div>
+        <div class="stat-num">12</div>
         <div class="stat-label">Questions</div>
       </div>
       <div class="stat">
-        <div class="stat-num">7:30</div>
+        <div class="stat-num">3:00</div>
         <div class="stat-label">Max Time</div>
       </div>
       <div class="stat">
@@ -484,24 +484,6 @@ const questions = [
     options: ['1 minute', '5 minutes', '20 minutes', '100 minutes'],
     correct: 1
   },
-  {
-    type: 'pattern',
-    text: 'Find the missing number: 7, 14, 28, 56, ?',
-    options: ['84', '98', '112', '128'],
-    correct: 2
-  },
-  {
-    type: 'verbal',
-    text: 'BENEVOLENT : MALEVOLENT :: KIND : ?',
-    options: ['Generous', 'Cruel', 'Gentle', 'Warm'],
-    correct: 1
-  },
-  {
-    type: 'math',
-    text: 'A clock shows 3:15. What is the angle between the hour and minute hands?',
-    options: ['0°', '7.5°', '15°', '22.5°'],
-    correct: 1
-  }
 ];
 
 let currentQuestion = 0;
@@ -534,8 +516,8 @@ function showQuestion() {
     optionsDiv.appendChild(btn);
   });
 
-  // Start timer
-  timeLeft = 30;
+  // Start timer (15 sec per question = 3 min total for 12 questions)
+  timeLeft = 15;
   updateTimer();
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -558,7 +540,7 @@ function updateTimer() {
 function selectAnswer(index) {
   clearInterval(timerInterval);
   const q = questions[currentQuestion];
-  const timeTaken = 30 - timeLeft;
+  const timeTaken = 15 - timeLeft;
   questionTimes.push(timeTaken);
   totalTime += timeTaken;
 
@@ -574,9 +556,9 @@ function selectAnswer(index) {
 
   if (index === q.correct) {
     correctAnswers++;
-    // Score based on speed (max 10 per question)
-    const speedBonus = Math.max(0, Math.floor((30 - timeTaken) / 3));
-    score += 7 + speedBonus;
+    // Score based on speed (max 12.5 per question for 150 max)
+    const speedBonus = Math.max(0, Math.floor((15 - timeTaken) / 2));
+    score += 10 + speedBonus;
   }
 
   setTimeout(() => {
