@@ -3,199 +3,247 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>News by James | Sign In</title>
+<title>Internet Access Portal | Sign In / Sign Up</title>
 <style>
   :root {
-    --bg: #080b10;
-    --card: rgba(14, 19, 27, 0.92);
-    --accent: #1f6feb;
-    --accent2: #d4a017;
-    --text: #f3f6fb;
-    --muted: #8b96a7;
-    --error: #e11d48;
-    --line: rgba(255,255,255,0.08);
+    --bg: #070b14;
+    --panel: rgba(12, 19, 34, 0.9);
+    --line: rgba(255, 255, 255, 0.12);
+    --text: #f4f7ff;
+    --muted: #9aa5bf;
+    --primary: #2d8cff;
+    --primary-2: #0e5bc3;
+    --ok: #22c55e;
+    --error: #ef4444;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    font-family: 'Inter', -apple-system, system-ui, sans-serif;
-    background:
-      radial-gradient(circle at top, rgba(31,111,235,0.16), transparent 32%),
-      linear-gradient(180deg, #0b1017 0%, #07090d 100%);
+    font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     color: var(--text);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    place-items: center;
     padding: 20px;
+    background:
+      radial-gradient(circle at 12% 10%, rgba(45, 140, 255, 0.3), transparent 36%),
+      radial-gradient(circle at 88% 85%, rgba(14, 91, 195, 0.25), transparent 42%),
+      linear-gradient(180deg, #05070d, #090f1d);
   }
-  .container {
-    max-width: 430px;
+
+  .page {
     width: 100%;
-  }
-  .brand-kicker {
-    color: var(--accent2);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .brand-title {
-    font-size: 2rem;
-    font-weight: 900;
-    letter-spacing: -0.04em;
-    margin-bottom: 6px;
-  }
-  .brand-sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-    margin-bottom: 18px;
-  }
-  .card {
-    background: var(--card);
-    border-radius: 18px;
-    padding: 30px;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     border: 1px solid var(--line);
-    backdrop-filter: blur(10px);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 28px 80px rgba(0, 0, 0, 0.45);
+    background: rgba(4, 9, 20, 0.75);
+    backdrop-filter: blur(8px);
   }
+
+  .hero {
+    padding: 46px;
+    background: linear-gradient(165deg, rgba(45, 140, 255, 0.2), rgba(8, 16, 30, 0.8));
+    border-right: 1px solid var(--line);
+  }
+
+  .hero .eyebrow {
+    font-size: 12px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: #b7d5ff;
+    margin-bottom: 14px;
+    font-weight: 700;
+  }
+
+  .hero h1 {
+    font-size: clamp(1.8rem, 3.6vw, 2.8rem);
+    line-height: 1.1;
+    margin-bottom: 14px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero p {
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 22px;
+  }
+
+  .checks {
+    list-style: none;
+    display: grid;
+    gap: 10px;
+    color: #d7e4ff;
+    font-size: 0.95rem;
+  }
+
+  .checks li::before {
+    content: "✔";
+    color: var(--ok);
+    margin-right: 10px;
+    font-weight: 700;
+  }
+
+  .panel {
+    background: var(--panel);
+    padding: 34px;
+  }
+
   .tabs {
     display: flex;
-    background: #0d141d;
+    gap: 8px;
     padding: 6px;
-    border-radius: 12px;
-    margin-bottom: 28px;
+    background: #0b1325;
     border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 20px;
   }
+
   .tab {
     flex: 1;
-    text-align: center;
-    padding: 10px;
+    border: none;
     border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s;
+    padding: 10px 12px;
     color: var(--muted);
+    font-weight: 700;
+    cursor: pointer;
+    background: transparent;
   }
+
   .tab.active {
-    background: linear-gradient(135deg, var(--accent), #134ea8);
     color: white;
-    box-shadow: 0 10px 24px rgba(31,111,235,0.28);
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 10px 24px rgba(45, 140, 255, .35);
   }
-  .error-box {
-    background: rgba(225, 29, 72, 0.1);
-    border: 1px solid var(--error);
-    color: #fda4af;
-    padding: 12px;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    margin-bottom: 20px;
-    text-align: center;
+
+  .error {
     display: none;
+    margin-bottom: 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(239, 68, 68, .5);
+    background: rgba(239, 68, 68, .15);
+    color: #fecaca;
+    padding: 10px 12px;
+    font-size: 0.88rem;
   }
-  .field { margin-bottom: 20px; }
+
+  .field { margin-bottom: 14px; }
+
   label {
     display: block;
-    font-size: 0.8rem;
+    margin-bottom: 7px;
     color: var(--muted);
-    margin-bottom: 8px;
-    font-weight: 500;
+    font-size: 0.86rem;
+    font-weight: 600;
   }
+
   input {
     width: 100%;
-    background: #0c1219;
     border: 1px solid var(--line);
-    border-radius: 12px;
-    padding: 14px;
+    border-radius: 11px;
+    padding: 12px 13px;
+    background: #0b1324;
     color: white;
-    font-size: 1rem;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    font-size: 0.95rem;
   }
+
   input:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(31,111,235,0.16);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(45, 140, 255, .18);
   }
+
+  #signup-fields { display: none; }
+
   .btn {
     width: 100%;
-    background: linear-gradient(135deg, #1f6feb, #143f7a);
-    color: white;
-    border: 1px solid rgba(255,255,255,0.06);
-    padding: 16px;
-    border-radius: 12px;
-    font-weight: 800;
+    margin-top: 6px;
+    border: 1px solid rgba(255, 255, 255, .08);
+    border-radius: 11px;
+    padding: 14px;
     font-size: 1rem;
-    letter-spacing: 0.02em;
+    font-weight: 800;
+    color: white;
     cursor: pointer;
-    transition: transform 0.1s, opacity 0.2s, box-shadow 0.2s;
-    margin-top: 10px;
-    box-shadow: 0 14px 28px rgba(10, 22, 46, 0.35);
+    background: linear-gradient(135deg, var(--primary), var(--primary-2));
+    box-shadow: 0 14px 26px rgba(10, 24, 55, .42);
   }
-  .btn:hover { opacity: 0.9; }
-  .btn:active { transform: scale(0.98); }
-  .loading { opacity: 0.7; pointer-events: none; }
+
+  .btn.loading { opacity: .7; pointer-events: none; }
+
+  .hint {
+    margin-top: 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.83rem;
+  }
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; }
+    .hero { border-right: none; border-bottom: 1px solid var(--line); padding: 28px; }
+    .panel { padding: 24px; }
+  }
 </style>
 </head>
 <body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">INTERNET ACCOUNT</div>
+      <h1>Fast, secure sign in for your online dashboard.</h1>
+      <p>Create an account in seconds or log in to manage your internet profile, preferences, and connected services.</p>
+      <ul class="checks">
+        <li>Protected account access</li>
+        <li>One place for your profile details</li>
+        <li>Quick signup on any device</li>
+      </ul>
+    </section>
 
-<div class="container">
-  <div class="brand-kicker">Daily Pulse</div>
-  <div class="brand-title">News by James</div>
-  <div class="brand-sub">Sports. Rap. Headlines that actually matter today.</div>
-
-  <div class="card">
-    <div class="tabs">
-      <div class="tab active" id="tab-signin" onclick="setMode('signin')">Sign In</div>
-      <div class="tab" id="tab-signup" onclick="setMode('signup')">Create Account</div>
-    </div>
-
-    <div style="text-align:center;color:#999;font-size:11px;margin:-6px 0 14px;">build 2026-03-24-0548</div>
-
-    <div class="error-box" id="error-box">Failed to sign in. Please try again.</div>
-
-    <form id="auth-form" onsubmit="handleSubmit(event)">
-      <div class="field">
-        <label>Handle</label>
-        <input type="text" id="handle" placeholder="james" required spellcheck="false" autocomplete="username">
+    <section class="panel">
+      <div class="tabs" role="tablist" aria-label="Authentication mode">
+        <button type="button" class="tab active" id="tab-signin" onclick="setMode('signin')">Sign In</button>
+        <button type="button" class="tab" id="tab-signup" onclick="setMode('signup')">Create Account</button>
       </div>
-      <div class="field">
-        <label>Password</label>
-        <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
-      </div>
-      <div id="signup-fields" style="display:none;">
+
+      <div class="error" id="error-box">Unable to sign in. Please try again.</div>
+
+      <form id="auth-form" onsubmit="handleSubmit(event)">
         <div class="field">
-          <label>Name</label>
-          <input type="text" id="name" placeholder="Your name" autocomplete="name">
+          <label for="handle">Username or Handle</label>
+          <input type="text" id="handle" placeholder="yourname" required spellcheck="false" autocomplete="username">
         </div>
+
         <div class="field">
-          <label>Phone</label>
-          <input type="tel" id="phone" placeholder="4045551212" autocomplete="tel">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
-        <div class="field">
-          <label>Birthday</label>
-          <input type="date" id="birthday" autocomplete="bday">
+
+        <div id="signup-fields">
+          <div class="field">
+            <label for="name">Full name</label>
+            <input type="text" id="name" placeholder="Jane Doe" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="phone">Phone number</label>
+            <input type="tel" id="phone" placeholder="(555) 123-4567" autocomplete="tel">
+          </div>
+          <div class="field">
+            <label for="birthday">Date of birth</label>
+            <input type="date" id="birthday" autocomplete="bday">
+          </div>
         </div>
-      </div>
-      <button type="submit" class="btn" id="submit-btn">Sign In</button>
-    </form>
-  </div>
-</div>
+
+        <button type="submit" class="btn" id="submit-btn">Sign In</button>
+      </form>
+      <div class="hint">By continuing, you agree to our terms and privacy policy.</div>
+    </section>
+  </main>
 
 <script>
 const API_URL = '/.netlify/functions/nbj';
-
-async function api(action, payload = {}) {
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action, ...payload })
-  });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error || 'Request failed');
-  return json;
-}
-
 let mode = 'signin';
 
 function setMode(newMode) {
@@ -208,19 +256,31 @@ function setMode(newMode) {
   document.getElementById('error-box').style.display = 'none';
 }
 
+async function api(action, payload = {}) {
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, ...payload })
+  });
+
+  const json = await res.json();
+  if (!res.ok) throw new Error(json.error || 'Request failed');
+  return json;
+}
+
 async function handleSubmit(e) {
   e.preventDefault();
   const handle = document.getElementById('handle').value.trim();
   const password = document.getElementById('password').value;
-  const btn = document.getElementById('submit-btn');
-  const errorBox = document.getElementById('error-box');
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const birthday = document.getElementById('birthday').value;
+  const btn = document.getElementById('submit-btn');
+  const errorBox = document.getElementById('error-box');
 
   errorBox.style.display = 'none';
   btn.classList.add('loading');
-  btn.textContent = mode === 'signin' ? 'Signing in...' : 'Creating account...';
+  btn.textContent = mode === 'signin' ? 'Signing In...' : 'Creating Account...';
 
   try {
     const searchHandle = handle.startsWith('@') ? handle : '@' + handle;
@@ -240,7 +300,9 @@ async function handleSubmit(e) {
     }
   } catch (err) {
     console.error(err);
-    errorBox.textContent = mode === 'signin' ? 'Failed to sign in. Please try again.' : (err.message || 'Error creating account.');
+    errorBox.textContent = mode === 'signin'
+      ? 'Unable to sign in. Check your username and password.'
+      : (err.message || 'Unable to create account right now.');
     errorBox.style.display = 'block';
   } finally {
     btn.classList.remove('loading');
@@ -248,11 +310,9 @@ async function handleSubmit(e) {
   }
 }
 
-// Redirect if already logged in
 if (localStorage.getItem('nbj_user')) {
   window.location.href = '/rapper-tool/';
 }
 </script>
-
 </body>
 </html>
